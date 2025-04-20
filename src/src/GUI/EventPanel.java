@@ -2,6 +2,7 @@ package GUI;
 
 import LOGIC.Completable;
 import LOGIC.Event;
+import LOGIC.EventListener;
 import LOGIC.Meeting;
 
 import javax.swing.*;
@@ -9,22 +10,28 @@ import java.awt.*;
 import java.time.Duration;
 import java.time.format.DateTimeFormatter;
 
-public class EventPanel extends JPanel {
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MMM dd yyyy, hh:mm a");
+/**
+ * Displays a single Event and listens for its changes.
+ */
+public class EventPanel extends JPanel implements EventListener {
+    private static final DateTimeFormatter formatter =
+            DateTimeFormatter.ofPattern("MMM dd yyyy, hh:mm a");
 
     private final Event event;
-    private JLabel nameLabel; // Store the name label as a field to update it later
+    private JLabel nameLabel;
 
     public EventPanel(Event event) {
         this.event = event;
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder());
+
         buildInfoPanel();
         addControlButtons();
-        // Ensure already-completed events display correctly on creation
-        if (event instanceof Completable) {
-            updateCompletionState();
-        }
+
+        // ─── OBSERVER ────────────────────
+        event.addListener(this);
+        updateCompletionState();
+        // ─────────────────────────────────
     }
 
     private void buildInfoPanel() {
@@ -33,10 +40,12 @@ public class EventPanel extends JPanel {
 
         // Create the name label and store it as a field
         nameLabel = new JLabel(event.getName());
-        JLabel dateLabel = new JLabel("Starts: " + event.getDateTime().format(formatter));
+        JLabel dateLabel =
+                new JLabel("Starts: " + event.getDateTime().format(formatter));
 
         if (event instanceof Meeting meeting) {
-            dateLabel.setText(dateLabel.getText() + " | Duration: " + formatDuration(meeting.getDuration()));
+            dateLabel.setText(dateLabel.getText()
+                    + " | Duration: " + formatDuration(meeting.getDuration()));
             infoPanel.add(new JLabel("Location: " + meeting.getLocation()));
         }
 
@@ -49,29 +58,30 @@ public class EventPanel extends JPanel {
         JPanel buttonPanel = new JPanel();
         if (event instanceof Completable completable) {
             JButton completeButton = new JButton("Complete");
-            completeButton.addActionListener(e -> {
-                completable.complete();
-                updateCompletionState();
-            });
+            completeButton.addActionListener(e -> completable.complete());
             buttonPanel.add(completeButton);
         }
         add(buttonPanel, BorderLayout.EAST);
     }
 
-    // Fixed duration formatting for Java 8 compatibility
+    /** Called by the Event model when anything changes. */
+    @Override
+    public void onEventChanged(Event evt) {
+        updateCompletionState();
+    }
+
     private String formatDuration(Duration duration) {
-        long hours = duration.toHours();
-        long minutes = duration.toMinutes() % 60; // Works in Java 8+
+        long hours   = duration.toHours();
+        long minutes = duration.toMinutes() % 60;
         return String.format("%dh %02dm", hours, minutes);
     }
 
     private void updateCompletionState() {
-        // Update the name label to include a check mark if the event is complete
-        if (((Completable) event).isComplete()) {
-            nameLabel.setText(event.getName() + " ✓"); // Add a check mark
+        if (event instanceof Completable && ((Completable) event).isComplete()) {
+            nameLabel.setText(event.getName() + " ✓");
             nameLabel.setForeground(Color.GRAY);
         } else {
-            nameLabel.setText(event.getName()); // Remove the check mark
+            nameLabel.setText(event.getName());
             nameLabel.setForeground(Color.BLACK);
         }
 

@@ -55,6 +55,7 @@ public class Meeting extends Event implements Completable {
     @Override
     public void complete() {
         isComplete = true;
+        notifyListeners(); //inform any UI panels or other observers about completion status.
     }
 
     // Returns the status of completion
