@@ -4,6 +4,8 @@ import LOGIC.Completable;
 import LOGIC.Event;
 import LOGIC.EventListener;
 import LOGIC.Meeting;
+import LOGIC.CompleteEventCommand;
+import LOGIC.Command;
 
 import javax.swing.*;
 import java.awt.*;
@@ -54,11 +56,21 @@ public class EventPanel extends JPanel implements EventListener {
         add(infoPanel, BorderLayout.CENTER);
     }
 
+    /**
+     * This decouples the UI from the action logic and it makes it possible
+     * for a future undo/redo implementation.
+     * (also makes it possible so that it could keep a List<Command> history,
+     * call undo(), etc., later).
+     */
     private void addControlButtons() {
         JPanel buttonPanel = new JPanel();
         if (event instanceof Completable completable) {
             JButton completeButton = new JButton("Complete");
-            completeButton.addActionListener(e -> completable.complete());
+            completeButton.addActionListener(e -> {
+                // wrap the action in a Command
+                Command cmd = new CompleteEventCommand(completable);
+                cmd.execute();
+            });
             buttonPanel.add(completeButton);
         }
         add(buttonPanel, BorderLayout.EAST);
