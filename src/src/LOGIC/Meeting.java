@@ -51,6 +51,12 @@ public class Meeting extends Event implements Completable {
         this.location = location;
     }
 
+    //Reversible setter used by undo().
+    public void setComplete(boolean isComplete) {
+        this.isComplete = isComplete;
+        notifyListeners();
+    }
+
     // Will mark the meeting as complete
     @Override
     public void complete() {

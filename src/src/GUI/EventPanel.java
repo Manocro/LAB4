@@ -6,6 +6,7 @@ import LOGIC.EventListener;
 import LOGIC.Meeting;
 import LOGIC.CompleteEventCommand;
 import LOGIC.Command;
+import LOGIC.CommandManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,14 +17,18 @@ import java.time.format.DateTimeFormatter;
  * Displays a single Event and listens for its changes.
  */
 public class EventPanel extends JPanel implements EventListener {
+    private final Event event;
+    private final CommandManager manager;
+
     private static final DateTimeFormatter formatter =
             DateTimeFormatter.ofPattern("MMM dd yyyy, hh:mm a");
 
-    private final Event event;
+
     private JLabel nameLabel;
 
-    public EventPanel(Event event) {
+    public EventPanel(Event event, CommandManager manager) {
         this.event = event;
+        this.manager = manager;
         setLayout(new BorderLayout());
         setBorder(BorderFactory.createEtchedBorder());
 
@@ -69,7 +74,7 @@ public class EventPanel extends JPanel implements EventListener {
             completeButton.addActionListener(e -> {
                 // wrap the action in a Command
                 Command cmd = new CompleteEventCommand(completable);
-                cmd.execute();
+                manager.execute(cmd);
             });
             buttonPanel.add(completeButton);
         }

@@ -1,9 +1,13 @@
 package GUI;
 
-import LOGIC.Completable;
 import LOGIC.Deadline;
+import LOGIC.Completable;
 import LOGIC.Event;
+import LOGIC.EventListener;
 import LOGIC.Meeting;
+import LOGIC.CompleteEventCommand;
+import LOGIC.Command;
+import LOGIC.CommandManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,6 +22,7 @@ public class EventListPanel extends JPanel {
     private JCheckBox hideCompletedCheck;
     private JCheckBox filterDeadlinesCheck;
     private JCheckBox filterMeetingsCheck;
+    private final CommandManager commandManager = new CommandManager();
 
     public EventListPanel() {
         setLayout(new BorderLayout());
@@ -64,6 +69,13 @@ public class EventListPanel extends JPanel {
             new AddEventModal(topFrame, EventListPanel.this).setVisible(true);
         });
         controlPanel.add(addButton);
+
+        JButton undoButton = new JButton("Undo");
+        undoButton.addActionListener(e -> commandManager.undo());
+        controlPanel.add(undoButton);
+        JButton redoButton = new JButton("Redo");
+        redoButton.addActionListener(e -> commandManager.redo());
+        controlPanel.add(redoButton);
     }
 
     public void addEvent(Event event) {
@@ -77,7 +89,7 @@ public class EventListPanel extends JPanel {
 
         displayPanel.removeAll();
         for (Event event : sorted) {
-            displayPanel.add(new EventPanel(event));
+            displayPanel.add(new EventPanel(event, commandManager));
         }
         displayPanel.revalidate();
         displayPanel.repaint();

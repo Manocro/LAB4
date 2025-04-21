@@ -21,6 +21,12 @@ public class Deadline extends Event implements Completable {
         return name;
     }
 
+
+    /** Reversible setter used by undo(). */
+    public void setComplete(boolean isComplete) {
+    this.isComplete = isComplete;
+    notifyListeners();
+    }
     // Marks the deadline as complete
 
     @Override

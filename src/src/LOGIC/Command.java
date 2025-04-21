@@ -8,4 +8,5 @@ public interface Command {
      * Executes this command.
      */
     void execute();
+    void undo();
 }
